@@ -1,13 +1,21 @@
 package com.ktconsulting.transfer_app.service
 
 import com.ktconsulting.transfer_app.dto.request.CompanyRequest
+import com.ktconsulting.transfer_app.dto.request.CreateCompanyAdminRequest
+import com.ktconsulting.transfer_app.dto.response.AgentResponse
 import com.ktconsulting.transfer_app.dto.response.CompanyResponse
+import com.ktconsulting.transfer_app.entity.Agent
 import com.ktconsulting.transfer_app.entity.Company
 import com.ktconsulting.transfer_app.entity.TransferLimits
+import com.ktconsulting.transfer_app.enum.ApprovalStatus
+import com.ktconsulting.transfer_app.enum.UserRole
 import com.ktconsulting.transfer_app.exception.DuplicateResourceException
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
+import com.ktconsulting.transfer_app.repository.AgentRepository
+import com.ktconsulting.transfer_app.repository.CityRepository
 import com.ktconsulting.transfer_app.repository.CompanyRepository
 import com.ktconsulting.transfer_app.repository.TransferLimitsRepository
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -16,7 +24,10 @@ import java.util.UUID
 @Service
 class CompanyService(
     private val companyRepository: CompanyRepository,
-    private val transferLimitsRepository: TransferLimitsRepository
+    private val transferLimitsRepository: TransferLimitsRepository,
+    private val agentRepository: AgentRepository,
+    private val cityRepository: CityRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     fun listCompanies(): List<CompanyResponse> =
@@ -42,7 +53,7 @@ class CompanyService(
         )
 
         transferLimitsRepository.save(
-            TransferLimits(companyId = company.id!!, company = company)
+            TransferLimits(company = company)
         )
 
         return company.toResponse()
@@ -66,6 +77,46 @@ class CompanyService(
         company.updatedAt = Instant.now()
 
         return companyRepository.save(company).toResponse()
+    }
+
+    @Transactional
+    fun createCompanyAdmin(companyId: UUID, request: CreateCompanyAdminRequest): AgentResponse {
+        val company = companyRepository.findById(companyId)
+            .orElseThrow { ResourceNotFoundException("error.company.not_found") }
+
+        val city = cityRepository.findById(request.cityId)
+            .filter { it.company.id == companyId }
+            .orElseThrow { ResourceNotFoundException("error.city.not_found") }
+
+        if (agentRepository.existsByCompanyIdAndPhone(companyId, request.phone)) {
+            throw DuplicateResourceException("error.agent.already_registered")
+        }
+
+        val admin = agentRepository.save(
+            Agent(
+                company = company,
+                city = city,
+                name = request.name,
+                phone = request.phone,
+                pin = passwordEncoder.encode(request.pin)!!,
+                role = UserRole.COMPANY_ADMIN,
+                approvalStatus = ApprovalStatus.APPROVED,
+                isActive = true
+            )
+        )
+
+        return AgentResponse(
+            id = admin.id!!,
+            name = admin.name,
+            phone = admin.phone,
+            cityId = admin.city.id!!,
+            cityName = admin.city.name,
+            role = admin.role,
+            approvalStatus = admin.approvalStatus,
+            initialCash = admin.initialCash,
+            isActive = admin.isActive,
+            createdAt = admin.createdAt
+        )
     }
 
     private fun Company.toResponse() = CompanyResponse(

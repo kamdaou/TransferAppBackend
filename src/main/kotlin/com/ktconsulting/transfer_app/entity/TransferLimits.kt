@@ -8,11 +8,11 @@ import java.util.UUID
 class TransferLimits(
 
     @Id
-    val companyId: UUID,
+    @GeneratedValue(strategy = GenerationType.UUID)
+    val id: UUID? = null,
 
-    @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_id", nullable = false, unique = true)
     val company: Company,
 
     @Column(nullable = false)
