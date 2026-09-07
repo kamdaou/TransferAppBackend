@@ -80,8 +80,10 @@ class PairingService(
         id = id!!,
         agent1Id = agent1.id!!,
         agent1Name = agent1.name,
+        agent1City = agent1.city.name,
         agent2Id = agent2.id!!,
         agent2Name = agent2.name,
+        agent2City = agent2.city.name,
         sharedSecret = sharedSecret,
         isActive = isActive,
         createdAt = createdAt
