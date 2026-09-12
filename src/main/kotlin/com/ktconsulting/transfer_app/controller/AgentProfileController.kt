@@ -32,6 +32,7 @@ class AgentProfileController(
                 role = agent.role,
                 approvalStatus = agent.approvalStatus,
                 initialCash = agent.initialCash,
+                adminSecret = agent.adminSecret,
                 isActive = agent.isActive,
                 createdAt = agent.createdAt
             )

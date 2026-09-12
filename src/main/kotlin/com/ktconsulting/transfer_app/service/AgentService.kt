@@ -9,6 +9,7 @@ import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.AgentRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.security.SecureRandom
 import java.time.Instant
 import java.util.UUID
 
@@ -35,6 +36,7 @@ class AgentService(
 
         agent.approvalStatus = ApprovalStatus.APPROVED
         agent.initialCash = request.initialCash
+        agent.adminSecret = generateAdminSecret()
         agent.updatedAt = Instant.now()
 
         return agentRepository.save(agent).toResponse()
@@ -59,6 +61,12 @@ class AgentService(
             .filter { it.company.id == companyId }
             .orElseThrow { ResourceNotFoundException("error.agent.not_found") }
 
+    private fun generateAdminSecret(): String {
+        val bytes = ByteArray(32)
+        SecureRandom().nextBytes(bytes)
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
     private fun Agent.toResponse() = AgentResponse(
         id = id!!,
         name = name,
@@ -68,6 +76,7 @@ class AgentService(
         role = role,
         approvalStatus = approvalStatus,
         initialCash = initialCash,
+        adminSecret = adminSecret,
         isActive = isActive,
         createdAt = createdAt
     )

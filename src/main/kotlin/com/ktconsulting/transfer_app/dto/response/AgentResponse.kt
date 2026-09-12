@@ -14,6 +14,7 @@ data class AgentResponse(
     val role: UserRole,
     val approvalStatus: ApprovalStatus,
     val initialCash: Long,
+    val adminSecret: String? = null,
     val isActive: Boolean,
     val createdAt: Instant
 )

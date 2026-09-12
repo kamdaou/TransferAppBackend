@@ -45,6 +45,9 @@ class Agent(
     @Column(nullable = false)
     var initialCash: Long = 0,
 
+    @Column
+    var adminSecret: String? = null,
+
     @Column(nullable = false)
     var isActive: Boolean = true,
 

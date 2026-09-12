@@ -114,6 +114,7 @@ class CompanyService(
             role = admin.role,
             approvalStatus = admin.approvalStatus,
             initialCash = admin.initialCash,
+            adminSecret = admin.adminSecret,
             isActive = admin.isActive,
             createdAt = admin.createdAt
         )
