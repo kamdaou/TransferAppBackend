@@ -2,6 +2,7 @@ package com.ktconsulting.transfer_app.service
 
 import com.ktconsulting.transfer_app.dto.request.CashAdjustmentRequest
 import com.ktconsulting.transfer_app.dto.response.BalanceResponse
+import com.ktconsulting.transfer_app.dto.response.CashAdjustmentResponse
 import com.ktconsulting.transfer_app.entity.CashAdjustment
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.AgentRepository
@@ -38,6 +39,24 @@ class CashService(
             pendingPayouts = pendingPayouts,
             availableCash = cashBalance - pendingPayouts
         )
+    }
+
+    fun getAdjustments(agentId: UUID, companyId: UUID): List<CashAdjustmentResponse> {
+        agentRepository.findById(agentId)
+            .filter { it.company.id == companyId }
+            .orElseThrow { ResourceNotFoundException("error.agent.not_found") }
+
+        return cashAdjustmentRepository.findByAgentIdAndCompanyId(agentId, companyId).map {
+            CashAdjustmentResponse(
+                id = it.id!!,
+                agentId = it.agent.id!!,
+                amount = it.amount,
+                reason = it.reason,
+                performedByAdminId = it.performedByAdmin.id!!,
+                performedByAdminName = it.performedByAdmin.name,
+                createdAt = it.createdAt
+            )
+        }
     }
 
     @Transactional

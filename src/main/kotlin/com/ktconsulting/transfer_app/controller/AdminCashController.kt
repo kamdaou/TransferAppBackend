@@ -2,6 +2,7 @@ package com.ktconsulting.transfer_app.controller
 
 import com.ktconsulting.transfer_app.dto.request.CashAdjustmentRequest
 import com.ktconsulting.transfer_app.dto.response.BalanceResponse
+import com.ktconsulting.transfer_app.dto.response.CashAdjustmentResponse
 import com.ktconsulting.transfer_app.security.SecurityUtil
 import com.ktconsulting.transfer_app.service.CashService
 import jakarta.validation.Valid
@@ -19,6 +20,10 @@ class AdminCashController(private val cashService: CashService) {
     @GetMapping("/{id}/balance")
     fun getBalance(@PathVariable id: UUID): ResponseEntity<BalanceResponse> =
         ResponseEntity.ok(cashService.getBalance(id, SecurityUtil.currentCompanyId()))
+
+    @GetMapping("/{id}/adjustments")
+    fun getAdjustments(@PathVariable id: UUID): ResponseEntity<List<CashAdjustmentResponse>> =
+        ResponseEntity.ok(cashService.getAdjustments(id, SecurityUtil.currentCompanyId()))
 
     @PostMapping("/{id}/cash-adjustment")
     fun adjustCash(
