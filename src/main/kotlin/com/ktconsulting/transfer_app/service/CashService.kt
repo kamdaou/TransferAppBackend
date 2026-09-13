@@ -60,7 +60,7 @@ class CashService(
     }
 
     @Transactional
-    fun adjustCash(agentId: UUID, companyId: UUID, adminId: UUID, request: CashAdjustmentRequest): CashAdjustment {
+    fun adjustCash(agentId: UUID, companyId: UUID, adminId: UUID, request: CashAdjustmentRequest): CashAdjustmentResponse {
         val agent = agentRepository.findById(agentId)
             .filter { it.company.id == companyId }
             .orElseThrow { ResourceNotFoundException("error.agent.not_found") }
@@ -71,7 +71,7 @@ class CashService(
         val company = companyRepository.findById(companyId)
             .orElseThrow { ResourceNotFoundException("error.company.not_found") }
 
-        return cashAdjustmentRepository.save(
+        val saved = cashAdjustmentRepository.save(
             CashAdjustment(
                 agent = agent,
                 company = company,
@@ -79,6 +79,16 @@ class CashService(
                 reason = request.reason,
                 performedByAdmin = admin
             )
+        )
+
+        return CashAdjustmentResponse(
+            id = saved.id!!,
+            agentId = saved.agent.id!!,
+            amount = saved.amount,
+            reason = saved.reason,
+            performedByAdminId = saved.performedByAdmin.id!!,
+            performedByAdminName = saved.performedByAdmin.name,
+            createdAt = saved.createdAt
         )
     }
 }

@@ -29,8 +29,8 @@ class AdminCashController(private val cashService: CashService) {
     fun adjustCash(
         @PathVariable id: UUID,
         @Valid @RequestBody request: CashAdjustmentRequest
-    ): ResponseEntity<Void> {
-        cashService.adjustCash(id, SecurityUtil.currentCompanyId(), SecurityUtil.currentAgentId(), request)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+    ): ResponseEntity<CashAdjustmentResponse> {
+        val adjustment = cashService.adjustCash(id, SecurityUtil.currentCompanyId(), SecurityUtil.currentAgentId(), request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(adjustment)
     }
 }
