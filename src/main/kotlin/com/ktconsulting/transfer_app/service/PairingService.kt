@@ -61,13 +61,13 @@ class PairingService(
     }
 
     @Transactional
-    fun deactivatePairing(pairingId: UUID, companyId: UUID) {
+    fun deactivatePairing(pairingId: UUID, companyId: UUID): PairingResponse {
         val pairing = pairingRepository.findById(pairingId)
             .filter { it.company.id == companyId && it.isActive }
             .orElseThrow { ResourceNotFoundException("error.pairing.not_found") }
 
         pairing.isActive = false
-        pairingRepository.save(pairing)
+        return pairingRepository.save(pairing).toResponse()
     }
 
     private fun generateSharedSecret(): String {
@@ -76,14 +76,19 @@ class PairingService(
         return bytes.joinToString("") { "%02x".format(it) }
     }
 
+    fun getAgentPairings(agentId: UUID): List<PairingResponse> =
+        pairingRepository.findActiveByAgentId(agentId).map { it.toResponse() }
+
     private fun AgentPairing.toResponse() = PairingResponse(
         id = id!!,
         agent1Id = agent1.id!!,
         agent1Name = agent1.name,
         agent1City = agent1.city.name,
+        agent1Phone = agent1.phone,
         agent2Id = agent2.id!!,
         agent2Name = agent2.name,
         agent2City = agent2.city.name,
+        agent2Phone = agent2.phone,
         sharedSecret = sharedSecret,
         isActive = isActive,
         createdAt = createdAt

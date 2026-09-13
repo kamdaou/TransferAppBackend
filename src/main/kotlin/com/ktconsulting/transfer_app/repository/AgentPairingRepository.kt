@@ -15,4 +15,10 @@ interface AgentPairingRepository : JpaRepository<AgentPairing, UUID> {
         "OR (ap.agent1.id = :agent2Id AND ap.agent2.id = :agent1Id))"
     )
     fun findActivePairing(companyId: UUID, agent1Id: UUID, agent2Id: UUID): AgentPairing?
+
+    @Query(
+        "SELECT ap FROM AgentPairing ap WHERE ap.isActive = true " +
+        "AND (ap.agent1.id = :agentId OR ap.agent2.id = :agentId)"
+    )
+    fun findActiveByAgentId(agentId: UUID): List<AgentPairing>
 }

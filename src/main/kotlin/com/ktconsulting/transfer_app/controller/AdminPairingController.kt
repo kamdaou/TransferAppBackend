@@ -26,8 +26,6 @@ class AdminPairingController(private val pairingService: PairingService) {
             .body(pairingService.createPairing(SecurityUtil.currentCompanyId(), request))
 
     @DeleteMapping("/{id}")
-    fun deactivatePairing(@PathVariable id: UUID): ResponseEntity<Void> {
-        pairingService.deactivatePairing(id, SecurityUtil.currentCompanyId())
-        return ResponseEntity.noContent().build()
-    }
+    fun deactivatePairing(@PathVariable id: UUID): ResponseEntity<PairingResponse> =
+        ResponseEntity.ok(pairingService.deactivatePairing(id, SecurityUtil.currentCompanyId()))
 }
