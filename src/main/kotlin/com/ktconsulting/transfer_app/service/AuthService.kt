@@ -60,7 +60,8 @@ class AuthService(
             role = agent.role,
             approvalStatus = agent.approvalStatus,
             companyId = company.id!!,
-            name = agent.name
+            name = agent.name,
+            adminSecret = agent.adminSecret
         )
     }
 
@@ -87,7 +88,8 @@ class AuthService(
             role = agent.role,
             approvalStatus = agent.approvalStatus,
             companyId = company.id!!,
-            name = agent.name
+            name = agent.name,
+            adminSecret = agent.adminSecret
         )
     }
 }

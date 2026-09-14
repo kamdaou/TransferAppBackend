@@ -10,5 +10,6 @@ data class AuthResponse(
     val role: UserRole,
     val approvalStatus: ApprovalStatus,
     val companyId: UUID,
-    val name: String
+    val name: String,
+    val adminSecret: String? = null
 )
