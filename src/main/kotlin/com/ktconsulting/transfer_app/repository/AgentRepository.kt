@@ -10,4 +10,5 @@ interface AgentRepository : JpaRepository<Agent, UUID> {
     fun findByCompanyIdAndApprovalStatus(companyId: UUID, status: ApprovalStatus): List<Agent>
     fun findByCompanyId(companyId: UUID): List<Agent>
     fun existsByCompanyIdAndPhone(companyId: UUID, phone: String): Boolean
+    fun findByApprovalStatusAndAdminSecretIsNull(status: ApprovalStatus): List<Agent>
 }

@@ -14,6 +14,7 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import java.security.SecureRandom
 
 @Component
 class DataSeeder(
@@ -62,5 +63,22 @@ class DataSeeder(
             )
             log.info("Created super admin with phone: {}", superAdminPhone)
         }
+
+        backfillAdminSecrets()
+    }
+
+    private fun backfillAdminSecrets() {
+        val agents = agentRepository.findByApprovalStatusAndAdminSecretIsNull(ApprovalStatus.APPROVED)
+        if (agents.isNotEmpty()) {
+            agents.forEach { it.adminSecret = generateAdminSecret() }
+            agentRepository.saveAll(agents)
+            log.info("Backfilled adminSecret for {} existing approved agents", agents.size)
+        }
+    }
+
+    private fun generateAdminSecret(): String {
+        val bytes = ByteArray(32)
+        SecureRandom().nextBytes(bytes)
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }
