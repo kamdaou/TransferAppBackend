@@ -61,6 +61,10 @@ class AuthService(
             approvalStatus = agent.approvalStatus,
             companyId = company.id!!,
             name = agent.name,
+            phone = agent.phone,
+            cityId = agent.city.id!!,
+            cityName = agent.city.name,
+            initialCash = agent.initialCash,
             adminSecret = agent.adminSecret
         )
     }
@@ -89,6 +93,10 @@ class AuthService(
             approvalStatus = agent.approvalStatus,
             companyId = company.id!!,
             name = agent.name,
+            phone = agent.phone,
+            cityId = agent.city.id!!,
+            cityName = agent.city.name,
+            initialCash = agent.initialCash,
             adminSecret = agent.adminSecret
         )
     }

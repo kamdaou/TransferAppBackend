@@ -11,5 +11,9 @@ data class AuthResponse(
     val approvalStatus: ApprovalStatus,
     val companyId: UUID,
     val name: String,
+    val phone: String,
+    val cityId: UUID,
+    val cityName: String,
+    val initialCash: Long,
     val adminSecret: String? = null
 )
