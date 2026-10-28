@@ -5,6 +5,7 @@ import com.ktconsulting.transfer_app.dto.request.TransactionItem
 import com.ktconsulting.transfer_app.dto.request.TransactionSyncRequest
 import com.ktconsulting.transfer_app.dto.response.SyncError
 import com.ktconsulting.transfer_app.dto.response.SyncedTransaction
+import com.ktconsulting.transfer_app.dto.response.TransactionListResponse
 import com.ktconsulting.transfer_app.dto.response.TransactionResponse
 import com.ktconsulting.transfer_app.dto.response.TransactionSyncResponse
 import com.ktconsulting.transfer_app.entity.Transaction
@@ -15,6 +16,7 @@ import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.*
 import com.ktconsulting.transfer_app.websocket.WebSocketService
 import org.springframework.context.MessageSource
+import org.springframework.data.domain.PageRequest
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -277,6 +279,25 @@ class TransactionService(
             mapOf("transactionId" to transactionId, "newStatus" to saved.status.name))
 
         return saved.toResponse()
+    }
+
+    fun getAgentTransactions(
+        agentId: UUID,
+        since: Instant?,
+        statuses: List<TransactionStatus>?,
+        limit: Int,
+        offset: Int
+    ): TransactionListResponse {
+        val page = transactionRepository.findByAgentFiltered(
+            agentId = agentId,
+            since = since,
+            statuses = statuses?.takeIf { it.isNotEmpty() },
+            pageable = PageRequest.of(offset / limit.coerceAtLeast(1), limit.coerceAtLeast(1))
+        )
+        return TransactionListResponse(
+            transactions = page.content.map { it.toResponse() },
+            total = page.totalElements
+        )
     }
 
     private fun Transaction.toResponse() = TransactionResponse(

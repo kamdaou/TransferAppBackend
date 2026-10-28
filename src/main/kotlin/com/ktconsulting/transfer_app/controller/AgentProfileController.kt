@@ -6,14 +6,18 @@ import com.ktconsulting.transfer_app.exception.BusinessRuleException
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.AgentRepository
 import com.ktconsulting.transfer_app.security.SecurityUtil
+import com.ktconsulting.transfer_app.enum.TransactionStatus
 import com.ktconsulting.transfer_app.service.CashService
 import com.ktconsulting.transfer_app.service.EncryptionService
 import com.ktconsulting.transfer_app.service.PairingService
+import com.ktconsulting.transfer_app.service.TransactionService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 
 @RestController
 @RequestMapping("/api/v1/agents")
@@ -22,6 +26,7 @@ class AgentProfileController(
     private val agentRepository: AgentRepository,
     private val pairingService: PairingService,
     private val cashService: CashService,
+    private val transactionService: TransactionService,
     private val encryptionService: EncryptionService
 ) {
 
@@ -57,6 +62,20 @@ class AgentProfileController(
     fun getMyAdjustments(): ResponseEntity<EncryptedResponse> {
         val adjustments = cashService.getAdjustments(SecurityUtil.currentAgentId(), SecurityUtil.currentCompanyId())
         return ResponseEntity.ok(encrypt(adjustments))
+    }
+
+    @GetMapping("/me/transactions")
+    fun getMyTransactions(
+        @RequestParam(required = false) since: Instant?,
+        @RequestParam(required = false) status: String?,
+        @RequestParam(defaultValue = "100") limit: Int,
+        @RequestParam(defaultValue = "0") offset: Int
+    ): ResponseEntity<EncryptedResponse> {
+        val statuses = status?.split(",")?.map { TransactionStatus.valueOf(it.trim()) }
+        val result = transactionService.getAgentTransactions(
+            SecurityUtil.currentAgentId(), since, statuses, limit, offset
+        )
+        return ResponseEntity.ok(encrypt(result))
     }
 
     private fun encrypt(data: Any): EncryptedResponse {

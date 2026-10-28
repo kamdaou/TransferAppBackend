@@ -2,6 +2,8 @@ package com.ktconsulting.transfer_app.repository
 
 import com.ktconsulting.transfer_app.entity.Transaction
 import com.ktconsulting.transfer_app.enum.TransactionStatus
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.Instant
@@ -10,6 +12,19 @@ import java.util.UUID
 interface TransactionRepository : JpaRepository<Transaction, UUID> {
     fun findByCompanyIdAndStatus(companyId: UUID, status: TransactionStatus): List<Transaction>
     fun findByAgentIdAndCompanyId(agentId: UUID, companyId: UUID): List<Transaction>
+
+    @Query(
+        "SELECT t FROM Transaction t WHERE t.agent.id = :agentId " +
+        "AND (:since IS NULL OR t.createdAt > :since) " +
+        "AND (:statuses IS NULL OR t.status IN :statuses) " +
+        "ORDER BY t.createdAt DESC"
+    )
+    fun findByAgentFiltered(
+        agentId: UUID,
+        since: Instant?,
+        statuses: List<TransactionStatus>?,
+        pageable: Pageable
+    ): Page<Transaction>
 
     @Query(
         "SELECT COALESCE(SUM(t.amount + t.fee), 0) FROM Transaction t " +
