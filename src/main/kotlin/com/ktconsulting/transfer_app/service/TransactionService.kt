@@ -288,12 +288,16 @@ class TransactionService(
         limit: Int,
         offset: Int
     ): TransactionListResponse {
-        val page = transactionRepository.findByAgentFiltered(
-            agentId = agentId,
-            since = since,
-            statuses = statuses?.takeIf { it.isNotEmpty() },
-            pageable = PageRequest.of(offset / limit.coerceAtLeast(1), limit.coerceAtLeast(1))
-        )
+        val pageable = PageRequest.of(offset / limit.coerceAtLeast(1), limit.coerceAtLeast(1))
+        val hasStatuses = !statuses.isNullOrEmpty()
+
+        val page = when {
+            since != null && hasStatuses -> transactionRepository.findByAgentAndSinceAndStatuses(agentId, since, statuses!!, pageable)
+            since != null -> transactionRepository.findByAgentAndSince(agentId, since, pageable)
+            hasStatuses -> transactionRepository.findByAgentAndStatuses(agentId, statuses!!, pageable)
+            else -> transactionRepository.findByAgent(agentId, pageable)
+        }
+
         return TransactionListResponse(
             transactions = page.content.map { it.toResponse() },
             total = page.totalElements

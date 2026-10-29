@@ -13,18 +13,17 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     fun findByCompanyIdAndStatus(companyId: UUID, status: TransactionStatus): List<Transaction>
     fun findByAgentIdAndCompanyId(agentId: UUID, companyId: UUID): List<Transaction>
 
-    @Query(
-        "SELECT t FROM Transaction t WHERE t.agent.id = :agentId " +
-        "AND (:since IS NULL OR t.createdAt > :since) " +
-        "AND (:statuses IS NULL OR t.status IN :statuses) " +
-        "ORDER BY t.createdAt DESC"
-    )
-    fun findByAgentFiltered(
-        agentId: UUID,
-        since: Instant?,
-        statuses: List<TransactionStatus>?,
-        pageable: Pageable
-    ): Page<Transaction>
+    @Query("SELECT t FROM Transaction t WHERE t.agent.id = :agentId ORDER BY t.createdAt DESC")
+    fun findByAgent(agentId: UUID, pageable: Pageable): Page<Transaction>
+
+    @Query("SELECT t FROM Transaction t WHERE t.agent.id = :agentId AND t.createdAt > :since ORDER BY t.createdAt DESC")
+    fun findByAgentAndSince(agentId: UUID, since: Instant, pageable: Pageable): Page<Transaction>
+
+    @Query("SELECT t FROM Transaction t WHERE t.agent.id = :agentId AND t.status IN :statuses ORDER BY t.createdAt DESC")
+    fun findByAgentAndStatuses(agentId: UUID, statuses: List<TransactionStatus>, pageable: Pageable): Page<Transaction>
+
+    @Query("SELECT t FROM Transaction t WHERE t.agent.id = :agentId AND t.createdAt > :since AND t.status IN :statuses ORDER BY t.createdAt DESC")
+    fun findByAgentAndSinceAndStatuses(agentId: UUID, since: Instant, statuses: List<TransactionStatus>, pageable: Pageable): Page<Transaction>
 
     @Query(
         "SELECT COALESCE(SUM(t.amount + t.fee), 0) FROM Transaction t " +
