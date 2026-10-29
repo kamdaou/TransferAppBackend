@@ -5,6 +5,7 @@ import com.ktconsulting.transfer_app.enum.TransactionStatus
 import com.ktconsulting.transfer_app.exception.BusinessRuleException
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.TransactionRepository
+import com.ktconsulting.transfer_app.websocket.WebSocketService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -12,7 +13,8 @@ import java.util.UUID
 
 @Service
 class CollectionService(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val webSocketService: WebSocketService
 ) {
 
     fun getPendingCollections(companyId: UUID): List<TransactionResponse> =
@@ -32,7 +34,12 @@ class CollectionService(
         txn.status = TransactionStatus.COLLECTED
         txn.updatedAt = Instant.now()
 
-        return transactionRepository.save(txn).toResponse()
+        val saved = transactionRepository.save(txn)
+
+        val event = mapOf("transactionId" to txn.id!!)
+        webSocketService.sendToAgents(listOf(txn.agent.id!!, txn.partner.id!!), "COLLECTION_APPROVED", event)
+
+        return saved.toResponse()
     }
 
     @Transactional

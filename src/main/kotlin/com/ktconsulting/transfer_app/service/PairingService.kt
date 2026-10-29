@@ -10,6 +10,7 @@ import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.AgentPairingRepository
 import com.ktconsulting.transfer_app.repository.AgentRepository
 import com.ktconsulting.transfer_app.repository.CompanyRepository
+import com.ktconsulting.transfer_app.websocket.WebSocketService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
@@ -19,7 +20,8 @@ import java.util.UUID
 class PairingService(
     private val pairingRepository: AgentPairingRepository,
     private val agentRepository: AgentRepository,
-    private val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository,
+    private val webSocketService: WebSocketService
 ) {
 
     fun getPairings(companyId: UUID): List<PairingResponse> =
@@ -57,7 +59,10 @@ class PairingService(
             )
         )
 
-        return pairing.toResponse()
+        val response = pairing.toResponse()
+        webSocketService.sendToAgents(listOf(agent1.id!!, agent2.id!!), "PAIRING_CREATED", response)
+
+        return response
     }
 
     @Transactional
@@ -67,7 +72,12 @@ class PairingService(
             .orElseThrow { ResourceNotFoundException("error.pairing.not_found") }
 
         pairing.isActive = false
-        return pairingRepository.save(pairing).toResponse()
+        pairingRepository.save(pairing)
+
+        val event = mapOf("pairingId" to pairing.id!!)
+        webSocketService.sendToAgents(listOf(pairing.agent1.id!!, pairing.agent2.id!!), "PAIRING_DELETED", event)
+
+        return pairing.toResponse()
     }
 
     private fun generateSharedSecret(): String {

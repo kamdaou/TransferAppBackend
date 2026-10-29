@@ -8,6 +8,7 @@ import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.AgentRepository
 import com.ktconsulting.transfer_app.repository.CashAdjustmentRepository
 import com.ktconsulting.transfer_app.repository.CompanyRepository
+import com.ktconsulting.transfer_app.websocket.WebSocketService
 import com.ktconsulting.transfer_app.repository.TransactionRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,7 +19,8 @@ class CashService(
     private val agentRepository: AgentRepository,
     private val transactionRepository: TransactionRepository,
     private val cashAdjustmentRepository: CashAdjustmentRepository,
-    private val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository,
+    private val webSocketService: WebSocketService
 ) {
 
     fun getBalance(agentId: UUID, companyId: UUID): BalanceResponse {
@@ -81,7 +83,7 @@ class CashService(
             )
         )
 
-        return CashAdjustmentResponse(
+        val response = CashAdjustmentResponse(
             id = saved.id!!,
             agentId = saved.agent.id!!,
             amount = saved.amount,
@@ -90,5 +92,9 @@ class CashService(
             performedByAdminName = saved.performedByAdmin.name,
             createdAt = saved.createdAt
         )
+
+        webSocketService.sendToAgent(agentId, "CASH_ADJUSTMENT", response)
+
+        return response
     }
 }

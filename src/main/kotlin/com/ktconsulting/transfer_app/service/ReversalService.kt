@@ -6,6 +6,7 @@ import com.ktconsulting.transfer_app.enum.TransactionStatus
 import com.ktconsulting.transfer_app.exception.BusinessRuleException
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.TransactionRepository
+import com.ktconsulting.transfer_app.websocket.WebSocketService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -13,7 +14,8 @@ import java.util.UUID
 
 @Service
 class ReversalService(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val webSocketService: WebSocketService
 ) {
 
     fun getPendingReversals(companyId: UUID): List<TransactionResponse> =
@@ -31,7 +33,12 @@ class ReversalService(
         txn.status = TransactionStatus.REVERSAL_APPROVED
         txn.updatedAt = Instant.now()
 
-        return transactionRepository.save(txn).toResponse()
+        val saved = transactionRepository.save(txn)
+
+        val event = mapOf("transactionId" to txn.id!!)
+        webSocketService.sendToAgents(listOf(txn.agent.id!!, txn.partner.id!!), "REVERSAL_APPROVED", event)
+
+        return saved.toResponse()
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import com.ktconsulting.transfer_app.exception.BusinessRuleException
 import com.ktconsulting.transfer_app.exception.ResourceNotFoundException
 import com.ktconsulting.transfer_app.repository.TransactionRepository
 import com.ktconsulting.transfer_app.security.SecurityUtil
+import com.ktconsulting.transfer_app.websocket.WebSocketService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -20,7 +21,8 @@ import java.util.UUID
 @RequestMapping("/api/v1/reversals")
 @PreAuthorize("hasRole('AGENT')")
 class AgentReversalController(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val webSocketService: WebSocketService
 ) {
 
     @PostMapping
@@ -44,6 +46,9 @@ class AgentReversalController(
 
         val saved = transactionRepository.save(txn)
 
+        webSocketService.sendToAgent(txn.partner.id!!, "STATUS_CHANGED",
+            mapOf("transactionId" to txn.id!!, "newStatus" to "REVERSAL_REQUESTED"))
+
         return ResponseEntity.status(HttpStatus.CREATED).body(saved.toResponse())
     }
 
@@ -64,7 +69,12 @@ class AgentReversalController(
         txn.status = TransactionStatus.REVERSED
         txn.updatedAt = Instant.now()
 
-        return ResponseEntity.ok(transactionRepository.save(txn).toResponse())
+        val saved = transactionRepository.save(txn)
+
+        webSocketService.sendToAgent(txn.partner.id!!, "STATUS_CHANGED",
+            mapOf("transactionId" to txn.id!!, "newStatus" to "REVERSED"))
+
+        return ResponseEntity.ok(saved.toResponse())
     }
 
     private fun com.ktconsulting.transfer_app.entity.Transaction.toResponse() = TransactionResponse(
