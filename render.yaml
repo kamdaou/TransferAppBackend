@@ -1,0 +1,39 @@
+databases:
+  - name: transferapp-db
+    plan: free
+    databaseName: transferapp
+    user: transferapp
+
+services:
+  - type: web
+    name: transferapp-backend
+    runtime: docker
+    plan: free
+    healthCheckPath: /v3/api-docs
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: transferapp-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: transferapp-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: transferapp-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: transferapp-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: transferapp-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SUPER_ADMIN_PHONE
+        sync: false
+      - key: SUPER_ADMIN_PIN
+        sync: false
