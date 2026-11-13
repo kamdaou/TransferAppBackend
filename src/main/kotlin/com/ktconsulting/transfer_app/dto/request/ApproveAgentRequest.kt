@@ -4,5 +4,5 @@ import jakarta.validation.constraints.Min
 
 data class ApproveAgentRequest(
     @field:Min(0)
-    val initialCash: Long
+    val initialCash: Long = 0
 )

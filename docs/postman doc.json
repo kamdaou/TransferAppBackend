@@ -1,0 +1,1545 @@
+{
+  "info": {
+    "name": "TransferApp API",
+    "description": "Multi-tenant SMS-based money transfer platform for Chad.\n\n## Setup Flow\n1. Login as Super Admin (companyCode: __SYSTEM__) \u2014 token auto-saved\n2. Create a company \u2014 companyId auto-saved\n3. Create cities \u2014 cityId/cityId2 auto-saved\n4. Create a company admin \u2014 adminAgentId auto-saved\n5. Login as Company Admin \u2014 token auto-switched\n6. Manage agents, pairings, commissions, etc.\n\n## Auto-saved Variables\nAll tokens and IDs are automatically saved to collection variables after each successful request. No manual copy-paste needed.\n\nVariables: baseUrl, token, companyId, cityId, cityId2, adminAgentId, agentId, agentId2, pairingId, commissionId, transactionId",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "9eb11c39-fcd2-4991-b808-c0392a80eee0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://transferapp-backend.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "companyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cityId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAgentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "agentId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pairingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "commissionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "description": "Login and registration endpoints. No auth required.",
+      "item": [
+        {
+          "name": "Super Admin Login",
+          "description": "Login as the super admin created from env variables.\ncompanyCode is always __SYSTEM__.\nCopy the token from the response into the collection variable 'token'.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+23500000000\",\n  \"pin\": \"000000\",\n  \"companyCode\": \"__SYSTEM__\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", json.token);",
+                  "    console.log(\"Token saved for Super Admin\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Company Admin Login",
+          "description": "Login as a company admin. Use the company code you created (e.g. TCHAD_EXPRESS).\nCopy the token from the response into the collection variable 'token'.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+23561234567\",\n  \"pin\": \"1234\",\n  \"companyCode\": \"TCHAD_EXPRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", json.token);",
+                  "    pm.collectionVariables.set(\"companyId\", json.companyId);",
+                  "    console.log(\"Token + companyId saved for Company Admin\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agent Login",
+          "description": "Login as an agent. Use the company code the agent registered with.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+23567890123\",\n  \"pin\": \"5678\",\n  \"companyCode\": \"TCHAD_EXPRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", json.token);",
+                  "    console.log(\"Token saved for Agent\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agent Register",
+          "description": "Self-registration for a new agent. Status will be PENDING until a company admin approves.\nRequires a valid cityId from the company.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Moussa Ibrahim\",\n  \"phone\": \"+23567890123\",\n  \"pin\": \"5678\",\n  \"companyCode\": \"TCHAD_EXPRESS\",\n  \"cityId\": \"{{cityId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", json.token);",
+                  "    pm.collectionVariables.set(\"agentId\", json.agentId);",
+                  "    console.log(\"Token + agentId saved for new Agent\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Super Admin",
+      "description": "Requires SUPER_ADMIN token.\nLogin with __SYSTEM__ company code first, then set the token.",
+      "item": [
+        {
+          "name": "List Companies",
+          "description": "List all companies (excludes __SYSTEM__).",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Company",
+          "description": "Create a new transfer company.\nSave the returned 'id' into the companyId variable.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyCode\": \"TCHAD_EXPRESS\",\n  \"name\": \"Tchad Express Transfert\",\n  \"logoUrl\": null,\n  \"primaryColor\": \"#1B5E20\",\n  \"contacts\": \"+235 66 00 00 00 - N'Djamena, Avenue Charles de Gaulle\",\n  \"collectionApprovalThreshold\": 500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"companyId\", json.id);",
+                  "    console.log(\"companyId saved: \" + json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Company",
+          "description": "Update an existing company. Set companyId variable first.",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies",
+                "{{companyId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyCode\": \"TCHAD_EXPRESS\",\n  \"name\": \"Tchad Express Transfert SA\",\n  \"logoUrl\": null,\n  \"primaryColor\": \"#1B5E20\",\n  \"contacts\": \"+235 66 00 00 00 - N'Djamena, Avenue Charles de Gaulle\",\n  \"collectionApprovalThreshold\": 750000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create City (N'Djamena)",
+          "description": "Create the first city for the company.\nSave the returned 'id' into the cityId variable.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/cities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies",
+                "{{companyId}}",
+                "cities"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"N'Djamena\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"cityId\", json.id);",
+                  "    console.log(\"cityId saved: \" + json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create City (Moundou)",
+          "description": "Create a second city for commission rate testing.\nSave the returned 'id' into the cityId2 variable.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/cities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies",
+                "{{companyId}}",
+                "cities"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Moundou\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"cityId2\", json.id);",
+                  "    console.log(\"cityId2 saved: \" + json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Company Admin",
+          "description": "Create an admin for the company. They can then login with the company code.\nSave the returned 'id' into the adminAgentId variable.\nRequires cityId to be set.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies",
+                "{{companyId}}",
+                "admin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ali Hassan\",\n  \"phone\": \"+23561234567\",\n  \"pin\": \"1234\",\n  \"cityId\": \"{{cityId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"adminAgentId\", json.id);",
+                  "    console.log(\"adminAgentId saved: \" + json.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Company Admin",
+      "description": "Requires COMPANY_ADMIN token.\nLogin with the company code first (e.g. TCHAD_EXPRESS), then set the token.",
+      "item": [
+        {
+          "name": "Agents",
+          "item": [
+            {
+              "name": "List All Agents",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "List Pending Agents",
+              "description": "Agents who registered and are waiting for approval.",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/pending",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "pending"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Approve Agent",
+              "description": "Approve a pending agent and set their initial cash balance (FCFA).\nSet agentId variable from the pending agents list.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "approve"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"initialCash\": 100000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var json = pm.response.json();",
+                      "    pm.collectionVariables.set(\"agentId\", json.id);",
+                      "    console.log(\"agentId saved: \" + json.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Reject Agent",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "reject"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cities",
+          "item": [
+            {
+              "name": "List Cities",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/cities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create City",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/cities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Abeche\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    var json = pm.response.json();",
+                      "    pm.collectionVariables.set(\"cityId\", json.id);",
+                      "    console.log(\"cityId saved: \" + json.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update City",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/cities/{{cityId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities",
+                    "{{cityId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"N'Djamena Centre\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pairings",
+          "item": [
+            {
+              "name": "List Pairings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/pairings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "pairings"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Pairing",
+              "description": "Pair two approved agents. Generates a shared secret for SMS encryption.\nSet agentId and agentId2 from the agents list.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/pairings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "pairings"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"agent1Id\": \"{{agentId}}\",\n  \"agent2Id\": \"{{agentId2}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    var json = pm.response.json();",
+                      "    pm.collectionVariables.set(\"pairingId\", json.id);",
+                      "    console.log(\"pairingId saved: \" + json.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Deactivate Pairing",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/pairings/{{pairingId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "pairings",
+                    "{{pairingId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Commissions",
+          "item": [
+            {
+              "name": "List Commission Rates",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/commissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "commissions"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Commission Rate",
+              "description": "Fee for transfers from N'Djamena to Moundou, 1,000-50,000 FCFA = 500 FCFA fee.\nSet cityId (sending) and cityId2 (receiving).",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/commissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "commissions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sendingCityId\": \"{{cityId}}\",\n  \"receivingCityId\": \"{{cityId2}}\",\n  \"minAmount\": 1000,\n  \"maxAmount\": 50000,\n  \"fee\": 500\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    var json = pm.response.json();",
+                      "    pm.collectionVariables.set(\"commissionId\", json.id);",
+                      "    console.log(\"commissionId saved: \" + json.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update Commission Rate",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/commissions/{{commissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "commissions",
+                    "{{commissionId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sendingCityId\": \"{{cityId}}\",\n  \"receivingCityId\": \"{{cityId2}}\",\n  \"minAmount\": 1000,\n  \"maxAmount\": 50000,\n  \"fee\": 750\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Delete Commission Rate",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/commissions/{{commissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "commissions",
+                    "{{commissionId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cash Management",
+          "item": [
+            {
+              "name": "Get Agent Balance",
+              "description": "Computed balance: initialCash + outgoing collections - incoming payouts + adjustments.",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/balance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "balance"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Inject Cash",
+              "description": "Add cash to an agent's balance. Positive amount = inject.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/cash-adjustment",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "cash-adjustment"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 50000,\n  \"reason\": \"Reapprovisionnement caisse agent - depot especes\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Withdraw Cash",
+              "description": "Remove cash from an agent's balance. Negative amount = withdraw.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/cash-adjustment",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "cash-adjustment"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": -25000,\n  \"reason\": \"Retrait caisse agent - remise fin de journee\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Get Agent Adjustments",
+              "description": "Audit trail of all cash adjustments for an agent.",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/{{agentId}}/adjustments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "{{agentId}}",
+                    "adjustments"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reversals",
+          "item": [
+            {
+              "name": "List Pending Reversals",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/reversals/pending",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "reversals",
+                    "pending"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Approve Reversal",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/reversals/{{transactionId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "reversals",
+                    "{{transactionId}}",
+                    "approve"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Reject Reversal",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/reversals/{{transactionId}}/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "reversals",
+                    "{{transactionId}}",
+                    "reject"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Collections",
+          "item": [
+            {
+              "name": "List Pending Collections",
+              "description": "High-value collections waiting for admin approval (above collectionApprovalThreshold).",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/collections/pending",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "collections",
+                    "pending"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Approve Collection",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/collections/{{transactionId}}/approve",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "collections",
+                    "{{transactionId}}",
+                    "approve"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Reject Collection",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/collections/{{transactionId}}/reject",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "collections",
+                    "{{transactionId}}",
+                    "reject"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Agent",
+      "description": "Requires AGENT token.\nLogin with the company code first, then set the token.",
+      "item": [
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "Get My Profile",
+              "description": "Returns encrypted response. Agent needs adminSecret to decrypt.",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "me"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get My Transactions",
+              "description": "Paginated list of agent's transactions. Optional filters: since, status, limit, offset.",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/me/transactions?limit=50&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "me",
+                    "transactions"
+                  ],
+                  "query": [
+                    {
+                      "key": "since",
+                      "value": "2026-01-01T00:00:00Z",
+                      "disabled": true
+                    },
+                    {
+                      "key": "status",
+                      "value": "SENT",
+                      "disabled": true
+                    },
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get My Pairings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/me/pairings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "me",
+                    "pairings"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get My Cash Adjustments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/agents/me/adjustments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "agents",
+                    "me",
+                    "adjustments"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Transactions",
+          "item": [
+            {
+              "name": "Send Transaction",
+              "description": "Create a new transfer. Agent collects cash from sender, notifies partner.\nAmount is in FCFA. feeIncluded=false means sender pays fee separately.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transactions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transactions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partnerId\": \"{{agentId2}}\",\n  \"amount\": 25000,\n  \"feeIncluded\": false,\n  \"senderCityId\": \"{{cityId}}\",\n  \"receiverCityId\": \"{{cityId2}}\",\n  \"senderPhone\": \"+23590000001\",\n  \"senderName\": \"Abakar Mahamat\",\n  \"receiverPhone\": \"+23590000002\",\n  \"receiverName\": \"Fatima Oumar\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    var json = pm.response.json();",
+                      "    pm.collectionVariables.set(\"transactionId\", json.id);",
+                      "    console.log(\"transactionId saved: \" + json.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Confirm Transaction",
+              "description": "Receiving agent confirms they are ready to pay out.",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transactions",
+                    "{{transactionId}}",
+                    "confirm"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Collect Transaction",
+              "description": "Receiving agent marks the transfer as collected (cash paid to receiver).",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}/collected",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transactions",
+                    "{{transactionId}}",
+                    "collected"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Sync Transactions (Batch)",
+              "description": "Push multiple offline transactions to the server at once.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transactions/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transactions",
+                    "sync"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"localId\": \"local-001\",\n      \"partnerId\": \"{{agentId2}}\",\n      \"amount\": 15000,\n      \"feeIncluded\": false,\n      \"senderCityId\": \"{{cityId}}\",\n      \"receiverCityId\": \"{{cityId2}}\",\n      \"senderPhone\": \"+23590000003\",\n      \"senderName\": \"Youssouf Adoum\",\n      \"receiverPhone\": \"+23590000004\",\n      \"receiverName\": \"Hawa Brahim\",\n      \"direction\": \"OUTGOING\",\n      \"status\": \"SENT\"\n    },\n    {\n      \"localId\": \"local-002\",\n      \"partnerId\": \"{{agentId2}}\",\n      \"amount\": 30000,\n      \"feeIncluded\": true,\n      \"senderCityId\": \"{{cityId}}\",\n      \"receiverCityId\": \"{{cityId2}}\",\n      \"senderPhone\": \"+23590000005\",\n      \"senderName\": \"Djibrine Moussa\",\n      \"receiverPhone\": \"+23590000006\",\n      \"receiverName\": \"Amina Saleh\",\n      \"direction\": \"OUTGOING\",\n      \"status\": \"SENT\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reversals",
+          "item": [
+            {
+              "name": "Request Reversal",
+              "description": "Agent requests to reverse a transaction. Needs admin approval.",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/reversals",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "reversals"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"reason\": \"Erreur de montant - le client a demande 25000 FCFA pas 250000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Confirm Reversal",
+              "description": "After admin approves, agent confirms cash was returned to sender.",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/reversals/{{transactionId}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "reversals",
+                    "{{transactionId}}",
+                    "confirm"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Public",
+      "description": "No auth required.",
+      "item": [
+        {
+          "name": "Get Company Config",
+          "description": "Public endpoint for the Android app. Returns branding, cities, commission rates, and transfer limits.",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/config/TCHAD_EXPRESS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "config",
+                "TCHAD_EXPRESS"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
