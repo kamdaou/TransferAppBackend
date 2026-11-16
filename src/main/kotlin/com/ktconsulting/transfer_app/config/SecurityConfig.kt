@@ -7,6 +7,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
+import org.springframework.security.authorization.AuthorizationManagerFactory
+import org.springframework.security.authorization.DefaultAuthorizationManagerFactory
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -26,6 +31,23 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val messageSource: MessageSource
 ) {
+
+    @Bean
+    fun roleHierarchy(): RoleHierarchy =
+        RoleHierarchyImpl.withDefaultRolePrefix()
+            .role("COMPANY_ADMIN").implies("AGENT")
+            .build()
+
+    @Bean
+    fun <T> authorizationManagerFactory(
+        roleHierarchy: RoleHierarchy
+    ): AuthorizationManagerFactory<T> {
+        val factory = DefaultAuthorizationManagerFactory<T>()
+        factory.setRoleHierarchy(roleHierarchy)
+        return factory
+    }
+
+
 
     private fun jsonError(status: HttpStatus, message: String): String =
         """{"status":${status.value()},"error":"${status.reasonPhrase}","message":"$message"}"""
