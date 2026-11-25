@@ -13,19 +13,21 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/commissions")
-@PreAuthorize("hasRole('COMPANY_ADMIN')")
 class AdminCommissionController(private val commissionService: CommissionService) {
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'AGENT')")
     fun getRates(): ResponseEntity<List<CommissionRateResponse>> =
         ResponseEntity.ok(commissionService.getRates(SecurityUtil.currentCompanyId()))
 
     @PostMapping
+    @PreAuthorize("hasRole('COMPANY_ADMIN')")
     fun createRate(@Valid @RequestBody request: CommissionRateRequest): ResponseEntity<CommissionRateResponse> =
         ResponseEntity.status(HttpStatus.CREATED)
             .body(commissionService.createRate(SecurityUtil.currentCompanyId(), request))
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('COMPANY_ADMIN')")
     fun updateRate(
         @PathVariable id: UUID,
         @Valid @RequestBody request: CommissionRateRequest
@@ -33,6 +35,7 @@ class AdminCommissionController(private val commissionService: CommissionService
         ResponseEntity.ok(commissionService.updateRate(id, SecurityUtil.currentCompanyId(), request))
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('COMPANY_ADMIN')")
     fun deleteRate(@PathVariable id: UUID): ResponseEntity<Void> {
         commissionService.deleteRate(id, SecurityUtil.currentCompanyId())
         return ResponseEntity.noContent().build()
