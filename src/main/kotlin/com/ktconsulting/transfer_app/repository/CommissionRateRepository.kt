@@ -10,7 +10,8 @@ interface CommissionRateRepository : JpaRepository<CommissionRate, UUID> {
 
     @Query(
         "SELECT cr FROM CommissionRate cr WHERE cr.company.id = :companyId " +
-        "AND cr.sendingCity.id = :sendingCityId AND cr.receivingCity.id = :receivingCityId " +
+        "AND ((cr.sendingCity.id = :sendingCityId AND cr.receivingCity.id = :receivingCityId) " +
+        "OR (cr.sendingCity.id = :receivingCityId AND cr.receivingCity.id = :sendingCityId)) " +
         "AND :amount BETWEEN cr.minAmount AND cr.maxAmount"
     )
     fun findRate(companyId: UUID, sendingCityId: UUID, receivingCityId: UUID, amount: Long): CommissionRate?
